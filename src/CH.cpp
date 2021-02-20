@@ -195,7 +195,6 @@ void CahnHilliard::assemble_rhs_CH()
    {
       fe_values.reinit(cell);
       cell_rhs_psi = 0;
-      //cell_rhs_psi_nonlinear = 0;
       cell_rhs_mu = 0;
       cell->get_dof_indices(local_dof_indices);
 
@@ -238,7 +237,7 @@ void CahnHilliard::output_results_CH(int step) const
 
    data_out.build_patches();
    const std::string filename =
-       "solution_CH" + Utilities::int_to_string(step, 3) + ".vtk";
+       "output/solution_CH" + Utilities::int_to_string(step, 3) + ".vtk";
    std::ofstream output_init(filename);
    data_out.write_vtk(output_init);
 }
