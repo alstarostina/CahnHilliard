@@ -8,7 +8,6 @@
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
-#include <deal.II/grid/tria_accessor.h>
 #include <deal.II/grid/tria_iterator.h>
 #include <deal.II/lac/block_sparse_matrix.h>
 #include <deal.II/lac/block_vector.h>
@@ -17,7 +16,6 @@
 #include <deal.II/lac/precondition.h>
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/solver_minres.h>
-#include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/matrix_tools.h>
@@ -34,10 +32,6 @@ public:
   void run();
 private:
   void make_grid();
-  void setup_system();
-  void assemble_system();
-  void solve();
-  void output_results() const;
   void setup_system_CH();
   void assemble_system_CH();
   void solve_CH();
@@ -45,15 +39,12 @@ private:
   void generate_initial_value();
   void assemble_rhs_CH();
   void update_and_clean_up_CH();
-
+  const double tau = 1.25e-4/2;
+  const double epsilon  = 2e-2;
 
   Triangulation<2> triangulation;
   FE_Q<2, 2>           fe;
   DoFHandler<2>    dof_handler;
-  SparsityPattern      sparsity_pattern;
-  SparseMatrix<double> system_matrix;
-  Vector<double> solution;
-  Vector<double> system_rhs;
 
   BlockSparsityPattern      sparsity_pattern_CH;
   BlockSparseMatrix<double> system_matrix_CH;
@@ -118,8 +109,6 @@ void CahnHilliard::generate_initial_value()
 
 void CahnHilliard::assemble_system_CH()
 {
-   double tau = 1.25e-4/2;
-   double epsilon  = 2e-2;
    QGauss<2> quadrature_formula(fe.degree + 1);
    FEValues<2> fe_values(fe,
                          quadrature_formula,
@@ -166,8 +155,6 @@ void CahnHilliard::assemble_system_CH()
                                              cell_M(i, j));
          }
       }
-
-     // system_matrix_CH.print_formatted(std::cout);
    }
 }
 
@@ -181,7 +168,6 @@ void CahnHilliard::solve_CH()
 
 void CahnHilliard::assemble_rhs_CH()
 {
-   constexpr double epsilon  = 2e-2;
    QGauss<2> quadrature_formula(fe.degree + 1);
    FEValues<2> fe_values(fe,
                          quadrature_formula,
@@ -249,7 +235,7 @@ void CahnHilliard::run()
   generate_initial_value();
   assemble_system_CH();
   assemble_rhs_CH();
-  for (unsigned int i = 0; i < 40; ++i)
+  for (unsigned int i = 0; i < 200; ++i)
    {
       solve_CH();
       output_results_CH(i);
